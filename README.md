@@ -13,8 +13,11 @@ https://krew.sigs.k8s.io/docs/user-guide/setup/install/
 
 ## Install kubectl-esopmok
 
+Binary Download [here](https://github.com/ureuzy/esopmok/releases)
 
-
+```text
+$ mv kubectl-esopmok ~/.krew/bin
+```
 
 ## Usage
 
@@ -29,7 +32,15 @@ Examples:
 kubectl esopmok deploy [deployment name]
 ```
 
-examples
+As an example, convert the Grafana Deployment to docker-compose.yml.
+
+```text
+$ kubectl get deploy grafana
+NAME      READY   UP-TO-DATE   AVAILABLE   AGE
+grafana   1/1     1            1           85d
+```
+
+To convert, enter the following command.
 
 ```text
 $ kubectl esopmok deploy grafana
@@ -61,59 +72,12 @@ services:
             GF_PATHS_PLUGINS: /var/lib/grafana/plugins
             GF_PATHS_PROVISIONING: /etc/grafana/provisioning
             GF_SECURITY_ADMIN_PASSWORD: ""
-            GF_SECURITY_ADMIN_USER: ""
-        image: grafana/grafana:9.1.5
-        ports:
-            - target: 3000
-              protocol: TCP
-        pull_policy: if_not_present
-        volumes:
-            - type: volume
-              source: config
-              target: /etc/grafana/grafana.ini
-            - type: volume
-              source: storage
-              target: /var/lib/grafana
-            - type: volume
-              source: config
-              target: /etc/grafana/provisioning/datasources/datasources.yaml
-            - type: volume
-              source: config
-              target: /etc/grafana/provisioning/dashboards/dashboardproviders.yaml
-            - type: volume
-              source: sc-dashboard-volume
-              target: /tmp/dashboards
-            - type: volume
-              source: sc-dashboard-provider
-              target: /etc/grafana/provisioning/dashboards/sc-dashboardproviders.yaml
-            - type: volume
-              source: auth-generic-oauth-secret-mount
-              target: /etc/secrets/auth_generic_oauth
-    grafana-grafana-sc-dashboard:
-        deploy:
-            replicas: 1
-        environment:
-            FOLDER: /tmp/dashboards
-            LABEL: grafana_dashboard
-            METHOD: WATCH
-            RESOURCE: both
-        image: quay.io/kiwigrid/k8s-sidecar:1.19.2
-        pull_policy: if_not_present
-        volumes:
-            - type: volume
-              source: sc-dashboard-volume
-              target: /tmp/dashboards
-volumes:
-    auth-generic-oauth-secret-mount:
-        name: auth-generic-oauth-secret-mount
-    config:
-        name: config
-    dashboards-default:
-        name: dashboards-default
-    sc-dashboard-provider:
-        name: sc-dashboard-provider
-    sc-dashboard-volume:
-        name: sc-dashboard-volume
-    storage:
-        name: storage
+
+~~~
+```
+
+Additionally, it can be run as follows
+
+```text
+$ kubectl esopmok deploy grafana | docker compose -f - up
 ```
