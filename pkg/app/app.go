@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/ureuzy/esopmok/pkg/consts"
 	"gopkg.in/yaml.v3"
 
 	composeSpec "github.com/compose-spec/compose-go/types"
@@ -19,21 +20,25 @@ type Esopmok struct {
 	compose *Compose
 }
 
-func NewEsopmok(f util.Factory, args []string) (*Esopmok, error) {
+func Run(f util.Factory, args []string) error {
 	kind, name, err := figureOutArgs(args)
 	if err != nil {
-		return nil, err
+		return err
 	}
+
 	clientSet, err := f.KubernetesClientSet()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &Esopmok{
+
+	esopmpk := Esopmok{
 		kind,
 		name,
 		clientSet,
 		&Compose{&composeSpec.Config{}},
-	}, nil
+	}
+
+	return esopmpk.Run()
 }
 
 func (e *Esopmok) Run() error {
@@ -41,18 +46,23 @@ func (e *Esopmok) Run() error {
 	if err != nil {
 		return err
 	}
+
 	e.compose.Mapping(deploy)
+	e.compose.Name = consts.ProjectName
+
 	out, err := yaml.Marshal(e.compose)
 	if err != nil {
 		return err
 	}
+
 	fmt.Println(string(out))
+
 	return nil
 }
 
 func figureOutArgs(args []string) (string, string, error) {
-	if l := len(args); l == 0 || l > 2 {
-		return "", "", fmt.Errorf("accepts between 1 and 2 arg(s), received %d", l)
+	if l := len(args); l != 2 {
+		return "", "", fmt.Errorf("accepts 2 args, received %d", l)
 	}
 	return args[0], args[1], nil
 }

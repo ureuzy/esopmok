@@ -35,14 +35,19 @@ func mapC(deploy *appsv1.Deployment, container corev1.Container) composeSpec.Ser
 			EndpointMode:   "",
 			Extensions:     nil,
 		},
-		PullPolicy: convPullPolicy(container.ImagePullPolicy),
-		Volumes:    volumeMounts(container.VolumeMounts),
+		PullPolicy:  convPullPolicy(container.ImagePullPolicy),
+		Volumes:     mapVolumeMounts(container.VolumeMounts),
+		Ports:       mapPorts(container.Ports),
+		Environment: mapEnvironment(container.Env),
+		Command:     container.Command,
+		//DependsOn: composeSpec.DependsOnConfig{} TODO InitContainer
+
 	}
 	return serviceConfig
 }
 
-// TODO needs to be changed depending on the type of volumes. Now fixed "volume" type
-func volumeMounts(mounts []corev1.VolumeMount) []composeSpec.ServiceVolumeConfig {
+// MapVolumeMounts TODO needs to be changed depending on the type of volumes. Now fixed "volume" type
+func mapVolumeMounts(mounts []corev1.VolumeMount) []composeSpec.ServiceVolumeConfig {
 	var serviceVolumeConfigs []composeSpec.ServiceVolumeConfig
 	for _, mount := range mounts {
 		config := composeSpec.ServiceVolumeConfig{
@@ -59,6 +64,30 @@ func volumeMounts(mounts []corev1.VolumeMount) []composeSpec.ServiceVolumeConfig
 		serviceVolumeConfigs = append(serviceVolumeConfigs, config)
 	}
 	return serviceVolumeConfigs
+}
+
+func mapPorts(ports []corev1.ContainerPort) []composeSpec.ServicePortConfig {
+	var servicePortConfigs []composeSpec.ServicePortConfig
+	for _, port := range ports {
+		portConfig := composeSpec.ServicePortConfig{
+			Mode:       "",
+			HostIP:     "",
+			Target:     uint32(port.ContainerPort),
+			Published:  "",
+			Protocol:   string(port.Protocol),
+			Extensions: nil,
+		}
+		servicePortConfigs = append(servicePortConfigs, portConfig)
+	}
+	return servicePortConfigs
+}
+
+func mapEnvironment(envVar []corev1.EnvVar) composeSpec.MappingWithEquals {
+	environments := composeSpec.MappingWithEquals{}
+	for _, env := range envVar {
+		environments[env.Name] = utils.Pointer(env.Value)
+	}
+	return environments
 }
 
 func convPullPolicy(policy corev1.PullPolicy) string {

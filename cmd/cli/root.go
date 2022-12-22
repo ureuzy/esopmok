@@ -33,18 +33,11 @@ func RootCmd() *cobra.Command {
 		Long:    "sample long",
 		Example: "kubectl esopmok deploy [deployment name]",
 		PreRun: func(cmd *cobra.Command, args []string) {
-			if err := viper.BindPFlags(cmd.Flags()); err != nil {
-				fmt.Println(err)
-			}
+			util.CheckErr(viper.BindPFlags(cmd.Flags()))
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			esopmok, err := app.NewEsopmok(f, args)
-			if err != nil {
-				fmt.Println(err)
-			}
-			if err = esopmok.Run(); err != nil {
-				fmt.Println(err)
-			}
+			util.CheckErr(setNamespace(f))
+			util.CheckErr(app.Run(f, args))
 		},
 		Version: "0.0.1",
 	}
@@ -53,4 +46,17 @@ func RootCmd() *cobra.Command {
 	resourceBuilderFlags.AddFlags(cmd.Flags())
 
 	return cmd
+}
+
+func setNamespace(f util.Factory) error {
+	if viper.GetBool("all-namespaces") {
+		viper.Set("namespace", "")
+		return nil
+	}
+	namespace, _, err := f.ToRawKubeConfigLoader().Namespace()
+	if err != nil {
+		return fmt.Errorf("can't determine namespace")
+	}
+	viper.Set("namespace", namespace)
+	return nil
 }
