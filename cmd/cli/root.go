@@ -29,8 +29,8 @@ func RootCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "kubectl-esopmok",
-		Short:   "sample short",
-		Long:    "sample long",
+		Short:   "Convert kubernetes manifest to docker-compose.yml",
+		Long:    "Convert kubernetes manifest to docker-compose.yml",
 		Example: "kubectl esopmok deploy [deployment name]",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			util.CheckErr(viper.BindPFlags(cmd.Flags()))
