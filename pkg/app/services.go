@@ -11,15 +11,15 @@ import (
 func MappingServices(deploy *appsv1.Deployment) composeSpec.Services {
 	services := composeSpec.Services{}
 	for _, c := range deploy.Spec.Template.Spec.Containers {
-		services = append(services, mapC(deploy, c))
+		services = append(services, mapC(deploy, &c))
 	}
 	for _, c := range deploy.Spec.Template.Spec.InitContainers {
-		services = append(services, mapC(deploy, c))
+		services = append(services, mapC(deploy, &c))
 	}
 	return services
 }
 
-func mapC(deploy *appsv1.Deployment, container corev1.Container) composeSpec.ServiceConfig {
+func mapC(deploy *appsv1.Deployment, container *corev1.Container) composeSpec.ServiceConfig {
 	serviceConfig := composeSpec.ServiceConfig{
 		Name:  fmt.Sprintf("%s-%s", deploy.Name, container.Name),
 		Image: container.Image,
@@ -40,8 +40,9 @@ func mapC(deploy *appsv1.Deployment, container corev1.Container) composeSpec.Ser
 		Ports:       mapPorts(container.Ports),
 		Environment: mapEnvironment(container.Env),
 		Command:     container.Command,
+		CapAdd:      utils.Map(container.SecurityContext.Capabilities.Add, func(c corev1.Capability) string { return string(c) }),
+		CapDrop:     utils.Map(container.SecurityContext.Capabilities.Drop, func(c corev1.Capability) string { return string(c) }),
 		//DependsOn: composeSpec.DependsOnConfig{} TODO InitContainer
-
 	}
 	return serviceConfig
 }
