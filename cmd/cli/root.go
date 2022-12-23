@@ -2,12 +2,13 @@ package cli
 
 import (
 	"fmt"
-	"github.com/ureuzy/esopmok/pkg/app"
+
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/kubectl/pkg/cmd/util"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ureuzy/esopmok/pkg/app"
 )
 
 func RootCmd() *cobra.Command {

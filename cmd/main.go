@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ureuzy/esopmok/cmd/cli"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
+	"github.com/ureuzy/esopmok/cmd/cli"
 )
 
 func main() {

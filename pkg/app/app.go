@@ -3,14 +3,15 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/ureuzy/esopmok/pkg/consts"
 	"gopkg.in/yaml.v3"
 
-	composeSpec "github.com/compose-spec/compose-go/types"
-	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/kubectl/pkg/cmd/util"
+
+	composeSpec "github.com/compose-spec/compose-go/types"
+	"github.com/spf13/viper"
+	"github.com/ureuzy/esopmok/pkg/consts"
 )
 
 type Esopmok struct {
