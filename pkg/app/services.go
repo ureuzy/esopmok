@@ -24,13 +24,17 @@ func mappingService(deploy *appsv1.Deployment, container *corev1.Container) (ser
 	service.Name = fmt.Sprintf("%s-%s", deploy.Name, container.Name)
 	service.Image = container.Image
 	service.Deploy = mappingDeploy(deploy)
-	service.PullPolicy = convPullPolicy(container.ImagePullPolicy)
-	service.Volumes = *mappingVolumeMounts(&container.VolumeMounts)
-	service.Ports = *mappingPorts(&container.Ports)
+	service.PullPolicy = mappingPullPolicy(container.ImagePullPolicy)
+	service.Volumes = *mappingVolumeMounts(container.VolumeMounts)
+	service.Ports = *mappingPorts(container.Ports)
 	service.Environment = *mappingEnvironment(container.Env)
 	service.Command = container.Command
-	service.CapAdd = *mappingCapabilities(&container.SecurityContext.Capabilities.Add)
-	service.CapDrop = *mappingCapabilities(&container.SecurityContext.Capabilities.Drop)
+
+	if container.SecurityContext != nil && container.SecurityContext.Capabilities != nil {
+		service.CapAdd = *mappingCapabilities(container.SecurityContext.Capabilities.Add)
+		service.CapDrop = *mappingCapabilities(container.SecurityContext.Capabilities.Drop)
+	}
+
 	return
 }
 
@@ -41,8 +45,8 @@ func mappingDeploy(deployment *appsv1.Deployment) *composeSpec.DeployConfig {
 }
 
 // MapVolumeMounts TODO needs to be changed depending on the type of volumes. Now fixed "volume" type
-func mappingVolumeMounts(volumeMounts *[]corev1.VolumeMount) *[]composeSpec.ServiceVolumeConfig {
-	return utils.MapP(volumeMounts, func(v corev1.VolumeMount) (result composeSpec.ServiceVolumeConfig) {
+func mappingVolumeMounts(volumeMounts []corev1.VolumeMount) *[]composeSpec.ServiceVolumeConfig {
+	return utils.MapP(&volumeMounts, func(v corev1.VolumeMount) (result composeSpec.ServiceVolumeConfig) {
 		result.Type = composeSpec.VolumeTypeVolume
 		result.Source = v.Name
 		result.Target = v.MountPath
@@ -50,8 +54,8 @@ func mappingVolumeMounts(volumeMounts *[]corev1.VolumeMount) *[]composeSpec.Serv
 	})
 }
 
-func mappingPorts(containerPorts *[]corev1.ContainerPort) *[]composeSpec.ServicePortConfig {
-	return utils.MapP(containerPorts, func(v corev1.ContainerPort) (result composeSpec.ServicePortConfig) {
+func mappingPorts(containerPorts []corev1.ContainerPort) *[]composeSpec.ServicePortConfig {
+	return utils.MapP(&containerPorts, func(v corev1.ContainerPort) (result composeSpec.ServicePortConfig) {
 		result.Target = uint32(v.ContainerPort)
 		result.Protocol = string(v.Protocol)
 		return
@@ -66,13 +70,13 @@ func mappingEnvironment(envVar []corev1.EnvVar) *composeSpec.MappingWithEquals {
 	return &environments
 }
 
-func mappingCapabilities(capabilities *[]corev1.Capability) *[]string {
-	return utils.MapP(capabilities, func(c corev1.Capability) string {
+func mappingCapabilities(capabilities []corev1.Capability) *[]string {
+	return utils.MapP(&capabilities, func(c corev1.Capability) string {
 		return string(c)
 	})
 }
 
-func convPullPolicy(policy corev1.PullPolicy) string {
+func mappingPullPolicy(policy corev1.PullPolicy) string {
 	switch policy {
 	case "Always":
 		return "always"
