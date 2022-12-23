@@ -4,6 +4,7 @@
 
 esopmok does the opposite of [Kompose](https://kompose.io/). That is, it converts the kubernetes manifest to docker-compose.yml
 
+![demo](https://raw.github.com/wiki/ureuzy/esopmok/images/demo.gif)
 
 # 🚀 Quick Start
 
