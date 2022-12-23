@@ -1,8 +1,9 @@
 package app
 
 import (
-	composeSpec "github.com/compose-spec/compose-go/types"
 	appsv1 "k8s.io/api/apps/v1"
+
+	composeSpec "github.com/compose-spec/compose-go/types"
 )
 
 func MappingVolumes(deploy *appsv1.Deployment) composeSpec.Volumes {
