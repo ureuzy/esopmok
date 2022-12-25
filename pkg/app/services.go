@@ -78,12 +78,12 @@ func mappingCapabilities(capabilities []corev1.Capability) *[]string {
 
 func mappingPullPolicy(policy corev1.PullPolicy) string {
 	switch policy {
-	case "Always":
-		return "always"
-	case "IfNotPresent":
-		return "if_not_present"
-	case "Never":
-		return "never"
+	case corev1.PullAlways :
+		return composeSpec.PullPolicyAlways
+	case corev1.PullNever:
+		return composeSpec.PullPolicyNever
+	case corev1.PullIfNotPresent:
+		return composeSpec.PullPolicyIfNotPresent
 	default:
 		return "auto"
 	}
